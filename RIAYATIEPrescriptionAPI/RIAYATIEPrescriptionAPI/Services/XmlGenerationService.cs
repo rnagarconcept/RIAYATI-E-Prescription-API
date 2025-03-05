@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using System.IO.Compression;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace RIAYATIEPrescriptionAPI.Services
 {
@@ -509,6 +511,7 @@ namespace RIAYATIEPrescriptionAPI.Services
             }
             return Task.FromResult(XmlData);
         }
+
 
         public static byte[] UnzipRarFile(byte[] bytRar, out string FileName)
         {
