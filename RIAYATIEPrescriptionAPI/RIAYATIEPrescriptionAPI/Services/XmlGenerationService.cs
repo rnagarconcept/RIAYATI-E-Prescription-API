@@ -1,5 +1,4 @@
-﻿using DataAccess;
-using log4net;
+﻿using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,6 +9,7 @@ using System.Web;
 using System.Xml;
 using System.IO.Compression;
 using ICSharpCode.SharpZipLib.Zip;
+using DataAccess;
 
 namespace RIAYATIEPrescriptionAPI.Services
 {

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+	<soap12:Body>
+		<SearchTransactions xmlns="{0}">
+			<login>{1}</login>
+			<pwd>{2}</pwd>
+			<direction>{3}</direction>
+			<callerLicense>{4}</callerLicense>
+			<clinicianLicense>{5}</clinicianLicense>
+			<memberID>{6}</memberID>
+			<eRxReferenceNo>{7}</eRxReferenceNo>
+			<transactionStatus>{8}</transactionStatus>
+			<transactionFromDate>{9}</transactionFromDate>
+			<transactionToDate>{10}</transactionToDate>
+			<minRecordCount>{11}</minRecordCount>
+			<maxRecordCount>{12}</maxRecordCount>
+		</SearchTransactions>
+	</soap12:Body>
+</soap12:Envelope>

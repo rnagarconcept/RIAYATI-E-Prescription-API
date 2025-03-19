@@ -1,7 +1,10 @@
 ﻿using log4net;
+using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
+using RIAYATIEPrescriptionAPI.Models.Common;
 using RIAYATIEPrescriptionAPI.Models.Response;
+using RIAYATIEPrescriptionAPI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -59,7 +62,6 @@ namespace DataAccess
             }
             return output;
         }
-
         public DataTable GetPatRxHeaderTable(int eRxNo)
         {
             var output = new List<RxHeaderResponseModel>();
@@ -146,6 +148,30 @@ namespace DataAccess
                 }
             }
             return output;
+        }
+        public DataTable GetFacilityDetailsTable(string facilityLic)
+        {
+            DataTable dataTable = null;
+            OracleConnection con = null;
+            using (con = OpenConnection())
+            {
+                var OraCmd = new OracleCommand();
+                OraCmd.Connection = con;
+                OraCmd.CommandText = $"{PackageName}.GET_FACILITY_CREDENATIAL";
+                OraCmd.CommandType = CommandType.StoredProcedure;
+                OraCmd.Parameters.Add("P_F_LIC", OracleDbType.NVarchar2, facilityLic, ParameterDirection.Input);
+                OraCmd.Parameters.Add(new OracleParameter("p_refcur", OracleDbType.RefCursor, ParameterDirection.Output));
+                if (con.State == ConnectionState.Closed)
+                {
+                    con.Open();
+                }
+                OraCmd.ExecuteNonQuery();
+                var reader = ((OracleRefCursor)OraCmd.Parameters["p_refcur"].Value).GetDataReader();
+                dataTable = new DataTable();
+                dataTable.Load(reader);
+                dataTable.TableName = "FacilityDetails";
+            }
+            return dataTable;
         }
         public List<PatPrescriptionHeaderResponseModel> GetPatPrescriptionHeader(int eRxNo)
         {
@@ -237,7 +263,6 @@ namespace DataAccess
             }
             return output;
         }
-
         public DataTable GetPatRxPatientTagTable(int eRxNo)
         {           
             OracleConnection con = null;
@@ -261,7 +286,6 @@ namespace DataAccess
                 return dataTable;
             }            
         }
-
         public List<PatRefNumResponseModel> GetPatWithRefNo(int eRxNo)
         {
             var output = new List<PatRefNumResponseModel>();
@@ -325,7 +349,6 @@ namespace DataAccess
             }
             return output;
         }
-
         public DataTable GetPatRxEncounterTable(int eRxNo)
         {
             var output = new List<PatRxEncounterResponseModel>();
@@ -382,7 +405,6 @@ namespace DataAccess
             }
             return output;
         }
-
         public DataTable GetPatRxDiagnosisTable(int eRxNo)
         {
             var output = new List<PatRxDiagnosisResponseModel>();
@@ -407,7 +429,6 @@ namespace DataAccess
                 return dataTable;
             }           
         }
-
         public List<PatRxActivityResponseModel> GetPatRxActivity(int eRxNo)
         {
             var output = new List<PatRxActivityResponseModel>();
@@ -511,7 +532,6 @@ namespace DataAccess
             }
             return output;
         }
-
         public DataTable GetPatRxObservationTable(int eRxNo, int actId)
         {
             var output = new List<PatRxObservationResponseModel>();
@@ -537,7 +557,6 @@ namespace DataAccess
                 return dataTable;
             }           
         }
-
         public List<PatPendingRxResponseModel> GetPatPendingRx()
         {
             var output = new List<PatPendingRxResponseModel>();
@@ -626,6 +645,24 @@ namespace DataAccess
                 }
             }
             return output;
+        }
+        public string GetOrderingPhyStr(int eRxNo)
+        {
+            DataTable dataTable = null;
+            string clinician = null;
+            OracleConnection con = null;
+            using (con = OpenConnection())
+            {
+                string strQry = $"select DISTINCT ERX_NO,CLINICIAN_ID from  pat_erx_encounter where  ERX_NO ='{eRxNo}'";
+                OracleDataAdapter Da = new OracleDataAdapter(strQry, con);
+                dataTable = new DataTable();
+                Da.Fill(dataTable);
+                if (dataTable != null && dataTable.Rows.Count > 0)
+                {
+                    clinician = dataTable.Rows[0]["CLINICIAN_ID"].ToString();
+                }
+            }
+            return clinician;
         }
         public bool UpdateStatusCode(int eRxNo, int responseCode)
         {
@@ -941,6 +978,133 @@ namespace DataAccess
                 }
             }
             return retval;
+        }
+        public DataTable GETPATPENINGERX()
+        {
+            DataTable dataTable = null;
+            OracleConnection con = null;
+            try
+            {                
+                var strQry = "select DISTINCT ERX_NO,SENDER_ID from  PAT_ERX_HEADER where  TRANSACTION_DATE >= SYSDATE - 5 and Status =0 and RECEIVER_ID <> 'CASH'";
+                using (con = OpenConnection())
+                {                   
+                    OracleDataAdapter Da = new OracleDataAdapter(strQry,con);
+                    dataTable = new DataTable();
+                    Da.Fill(dataTable);
+                    dataTable.TableName = "PendingReq";
+                }
+            }
+            catch (Exception ex) { log.Error(ex); }
+            finally
+            {
+                if (con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
+            return dataTable;
+        }
+        public ConfigurationSettingsModel GetConfigurationSettings(int status)
+        {
+            OracleConnection con = null;
+            ConfigurationSettingsModel result = null;
+            try
+            {
+                result = CacheManager.Instance.GetCache<ConfigurationSettingsModel>(GlobalConstants.CONFIG_SETTINGS);
+                if (result == null)
+                {
+                    using (con = OpenConnection())
+                    {
+                        using (OracleCommand OraCmd = new OracleCommand())
+                        {
+                            OraCmd.Connection = con;
+                            OraCmd.CommandType = CommandType.StoredProcedure;
+                            OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.GET_CONFIGURATION_SETTINGS";
+                            OraCmd.Parameters.Add("P_STATUS", status);
+                            OraCmd.Parameters.Add(new OracleParameter("p_refcur", OracleDbType.RefCursor, ParameterDirection.Output));
+                            if (con.State == ConnectionState.Closed)
+                            {
+                                con.Open();
+                            }
+                            OraCmd.ExecuteNonQuery();
+                            var reader = ((OracleRefCursor)OraCmd.Parameters["p_refcur"].Value).GetDataReader();
+                            if (reader.HasRows)
+                            {
+                                result = new ConfigurationSettingsModel();
+                                while (reader.Read())
+                                {
+                                    result.ApiBaseUrl = reader.ToString("API_URL");
+                                    result.ClientId = reader.ToString("CLIENTID");
+                                    result.ClientSecret = reader.ToString("CLIENT_SECRET");
+                                    result.AppID = reader.ToString("API_ID");
+                                    result.ApiKey = reader.ToString("API_KEY");
+                                }
+                            }
+                            CacheManager.Instance.SetCache(GlobalConstants.CONFIG_SETTINGS, result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error GetConfigurationSettings {ex.Message}", ex);
+            }
+            return result;
+        }
+        public List<PendingRequestsModel> GetPendingRequests()
+        {
+            OracleConnection con = null;
+            var result = new List<PendingRequestsModel>();
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (OracleCommand OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = $"{PackageName}.GET_PENDING_REQUESTS";
+                        OraCmd.Parameters.Add(new OracleParameter("p_refcur", OracleDbType.RefCursor, ParameterDirection.Output));
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                        var reader = ((OracleRefCursor)OraCmd.Parameters["p_refcur"].Value).GetDataReader();
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                var obj = new PendingRequestsModel();
+                                obj.ID = reader.ToInt32("ERX_NO");
+                                obj.REQUEST_TYPE = reader.ToString("RECEIVER_ID");
+                                obj.PendingRequest.ERX_NO = reader.ToString("ERX_NO");
+                                obj.PendingRequest.SENDER_ID = reader.ToString("SENDER_ID");
+                                obj.PendingRequest.RECEIVER_ID = reader.ToString("RECEIVER_ID");
+                                obj.PendingRequest.TRANSACTION_DATE = reader.ToString("TRANSACTION_DATE");
+                                obj.PendingRequest.RECORD_COUNT = reader.ToString("RECORD_COUNT");
+                                obj.PendingRequest.DISPOSITION_FLAG = reader.ToString("DISPOSITION_FLAG");
+                                obj.PendingRequest.STATUS = reader.ToString("STATUS");
+                                obj.PendingRequest.LAST_REQ_STATUS_TIME = reader.ToString("LAST_REQ_STATUS_TIME");
+                                obj.PendingRequest.LAST_RES_STATUS_TIME = reader.ToString("LAST_RES_STATUS_TIME");
+                                obj.PendingRequest.REQUESTED_BY = reader.ToString("REQUESTED_BY");
+                                obj.PendingRequest.ORDER_NO = reader.ToString("ORDER_NO");
+                                obj.PendingRequest.MRN = reader.ToString("MRN");
+                                obj.PendingRequest.ORDER_TYPE = reader.ToString("ORDER_TYPE");
+                                obj.PendingRequest.RES_CODE = reader.ToString("RES_CODE");
+                                obj.PendingRequest.UPD_FLAG = reader.ToString("UPD_FLAG");
+                                obj.PAYLOAD = JsonConvert.SerializeObject(obj.PendingRequest);                               
+                                result.Add(obj);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error GetPendingRequests {ex.Message}", ex);
+            }
+            return result;
         }
     }
 }

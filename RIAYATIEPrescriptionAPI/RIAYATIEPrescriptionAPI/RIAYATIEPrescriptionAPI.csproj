@@ -58,6 +58,9 @@
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.23.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>..\packages\Oracle.ManagedDataAccess.23.7.0\lib\net472\Oracle.ManagedDataAccess.dll</HintPath>
     </Reference>
+    <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
+      <HintPath>..\packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -152,6 +155,9 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
+    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebActivatorEx.2.0\lib\net40\WebActivatorEx.dll</HintPath>
+    </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
       <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
@@ -170,6 +176,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
     <Compile Include="Areas\HelpPage\App_Start\HelpPageConfig.cs" />
@@ -199,30 +206,20 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\SoapEnevlopUtilService.cs" />
+    <Compile Include="Controllers\ERxValidateTransactionController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
-    <Compile Include="DataAccess\CacheManager.cs" />
-    <Compile Include="DataAccess\OracleDataAccessRepository.cs" />
-    <Compile Include="DataAccess\OracleDataReaderEx.cs" />
-    <Compile Include="DataAccess\OracleRepositoryBase.cs" />
-    <Compile Include="DataAccess\RepositoryBase.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Response\FacilityLoginResponseModel.cs" />
-    <Compile Include="Models\Response\OrderingPhyResponseModel.cs" />
-    <Compile Include="Models\Response\PatPendingRxResponseModel.cs" />
-    <Compile Include="Models\Response\PatPrescriptionHeaderResponseModel.cs" />
-    <Compile Include="Models\Response\PatRefNumResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxActivityResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxDiagnosisResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxEncounterResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxObservationResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxPatientTagResponseModel.cs" />
-    <Compile Include="Models\Response\PhysicianLoginResponseModel.cs" />
-    <Compile Include="Models\Response\RxHeaderResponseModel.cs" />
-    <Compile Include="Models\Response\XmlTypeClobResponseModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\CacheManagerService.cs" />
+    <Compile Include="Services\ERXDHAService.cs" />
+    <Compile Include="Services\ERXDHAServiceBase.cs" />
+    <Compile Include="Services\ErxDHAWebRequestService.cs" />
+    <Compile Include="Services\IERXDHAService.cs" />
+    <Compile Include="Services\SoapMessageEnevlopService.cs" />
     <Compile Include="Services\XmlGenerationService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -267,6 +264,27 @@
     <Content Include="Scripts\jquery-3.4.1.slim.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Services\SoapMessages\downloadTransactionFileSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\SoapMessages\geteRxTransactionSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\SoapMessages\getNewTransactionsSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\SoapMessages\searchTransactionsSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\SoapMessages\setTransactionDownloadedSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\SoapMessages\uploadERxAuthorizationSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\SoapMessages\uploadErxRequestSoapBody.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -284,7 +302,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\Request\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
@@ -314,6 +332,16 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj">
+      <Project>{83920CB7-9B79-4260-AD68-6E48C4EE3F12}</Project>
+      <Name>DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DomainModel\DomainModel.csproj">
+      <Project>{00CFA555-A90C-4069-9B3E-7FBD2A412440}</Project>
+      <Name>DomainModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

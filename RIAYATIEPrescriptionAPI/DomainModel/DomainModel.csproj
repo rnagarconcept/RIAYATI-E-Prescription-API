@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{00CFA555-A90C-4069-9B3E-7FBD2A412440}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DomainModel</RootNamespace>
+    <AssemblyName>DomainModel</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\Common\ConfigurationSettingsModel.cs" />
+    <Compile Include="Models\Common\GlobalConstants.cs" />
+    <Compile Include="Models\Common\LicenseDetailsModel.cs" />
+    <Compile Include="Models\Common\MessageEnevlop.cs" />
+    <Compile Include="Models\Common\PendingRequest.cs" />
+    <Compile Include="Models\Common\PendingRequestsModel.cs" />
+    <Compile Include="Models\Common\SoapConfigurationSettings.cs" />
+    <Compile Include="Models\Request\ApiRequestModel.cs" />
+    <Compile Include="Models\Request\DownloadTransactionRequestModel.cs" />
+    <Compile Include="Models\Request\GeteRxTransactionsRequestModel.cs" />
+    <Compile Include="Models\Request\ModelBase.cs" />
+    <Compile Include="Models\Request\SearchTransactionRequestModel.cs" />
+    <Compile Include="Models\Request\SetTransactionDownloadedRequestModel.cs" />
+    <Compile Include="Models\Request\UploadERxAuthorizationRequestModel.cs" />
+    <Compile Include="Models\Request\UploadERxRequestRequestModel.cs" />
+    <Compile Include="Models\Response\ApiResponseModel.cs" />
+    <Compile Include="Models\Response\FacilityLoginResponseModel.cs" />
+    <Compile Include="Models\Response\OrderingPhyResponseModel.cs" />
+    <Compile Include="Models\Response\PatPendingRxResponseModel.cs" />
+    <Compile Include="Models\Response\PatPrescriptionHeaderResponseModel.cs" />
+    <Compile Include="Models\Response\PatRefNumResponseModel.cs" />
+    <Compile Include="Models\Response\PatRxActivityResponseModel.cs" />
+    <Compile Include="Models\Response\PatRxDiagnosisResponseModel.cs" />
+    <Compile Include="Models\Response\PatRxEncounterResponseModel.cs" />
+    <Compile Include="Models\Response\PatRxObservationResponseModel.cs" />
+    <Compile Include="Models\Response\PatRxPatientTagResponseModel.cs" />
+    <Compile Include="Models\Response\PhysicianLoginResponseModel.cs" />
+    <Compile Include="Models\Response\RxHeaderResponseModel.cs" />
+    <Compile Include="Models\Response\XmlTypeClobResponseModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
