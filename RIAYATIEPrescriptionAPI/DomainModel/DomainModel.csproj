@@ -71,8 +71,10 @@
     <Compile Include="Models\Response\PatRxEncounterResponseModel.cs" />
     <Compile Include="Models\Response\PatRxObservationResponseModel.cs" />
     <Compile Include="Models\Response\PatRxPatientTagResponseModel.cs" />
+    <Compile Include="Models\Response\PendingRequestStatus.cs" />
     <Compile Include="Models\Response\PhysicianLoginResponseModel.cs" />
     <Compile Include="Models\Response\RxHeaderResponseModel.cs" />
+    <Compile Include="Models\Response\TokenResponseModel.cs" />
     <Compile Include="Models\Response\XmlTypeClobResponseModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

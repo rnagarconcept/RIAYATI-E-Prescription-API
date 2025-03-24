@@ -20,5 +20,7 @@ namespace DomainModel
         public const string FACILITY_LICENSES = "FACILITY_LICENSES";
         public const string PAT_ERX_ENCOUNTERS = "PAT_ERX_ENCOUNTERS";
         public const string PHYSICIAN_CREDENTIALS = "PHYSICIAN_CREDENTIALS";
+
+        public const string AUTH_TOKEN = "AUTH_TOKEN";
     }
 }

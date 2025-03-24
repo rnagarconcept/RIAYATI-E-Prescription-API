@@ -31,34 +31,14 @@ namespace ApplicationInsight
             }
         }
         public async Task<ApiResponseModel> SendAsync(ApiRequestModel model)
-        {
-            var payload = JsonConvert.SerializeObject(model);
+        {            
             try
             {
                 responseModel = new ApiResponseModel();
-                log.Info($"Start sending api request with payload \n {payload}\n");
-                var httpClient = new HttpClient();
-                var message = new HttpRequestMessage();
-                message.RequestUri = new Uri($"{model.ApiUrl}");
-                if (!string.IsNullOrEmpty(model.AuthToken))
-                {
-                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {model.AuthToken}");
-                }
-                if (model.CustomHeaders != null && model.CustomHeaders.Count > 0)
-                {
-                    foreach (var header in model.CustomHeaders)
-                    {
-                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-                    }
-                }
-                if (model.Data != null)
-                {
-                    //var jsonContent = JsonConvert.SerializeObject(model.Data);
-                    var jsonContent = model.Data;
-                    message.Content = new StringContent(jsonContent.ToString(), Encoding.UTF8, "application/json");
-                }
-                message.Method = model.Method;
-                var response = Task.Run(() => httpClient.SendAsync(message)).Result;
+                HttpClient client = new HttpClient { BaseAddress = new Uri(model.ApiUrl) };
+                client.DefaultRequestHeaders.Add("Username", model.Auth.F_USER);
+                client.DefaultRequestHeaders.Add("Password", model.Auth.F_PWD);
+                HttpResponseMessage response = await client.GetAsync(model.EndPoint);
                 if (response != null)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
@@ -76,8 +56,8 @@ namespace ApplicationInsight
                 }
                 else
                 {
-                    log.Error($"Error No Response From API : {payload}");
-                    throw new Exception("No response return from API");
+                    log.Error($"Error No Response From API : {model.Auth.F_LIC}");
+                    throw new Exception("Error No Response From API");
                 }
             }
             catch (Exception ex)

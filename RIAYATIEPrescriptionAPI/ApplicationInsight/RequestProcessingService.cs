@@ -1,11 +1,11 @@
-﻿using ApplicationInsight.Services;
-using DataAccess;
+﻿using DataAccess;
 using DomainModel.Models.Request;
 using DomainModel.Models.Response;
 using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -15,6 +15,7 @@ namespace ApplicationInsight
 {
     public class EndpointExpressBase
     {
+        protected string ApiBaseURL = ConfigurationManager.AppSettings["API_BASE_URL"];
     }
     public class RequestProcessingService : EndpointExpressBase
     {
@@ -31,134 +32,89 @@ namespace ApplicationInsight
             }
         }
         public async Task Process()
-        {
+        {           
             var pendingRequests = OracleDataAccessRepository.GetInstance.GetPendingRequests();
-            if (pendingRequests.Count > 0)
+            var facilityLicense = OracleDataAccessRepository.GetInstance.GetFacilityLicenseDetails();
+            if (pendingRequests.Count > 0)           
             {
-                var facilityLicenses = OracleDataAccessRepository.GetInstance.GetFacilityDetails();
-                var patErxEncounters = OracleDataAccessRepository.GetInstance.GetErxPatEncounters(0);
-                var physicianCreddetails = OracleDataAccessRepository.GetInstance.GetPhysicianCredentials();
-                var licenseDetails = OracleDataAccessRepository.GetInstance.GetLicenseDetails();
                 foreach (var req in pendingRequests)
                 {
-                    var license = facilityLicenses.FirstOrDefault(x => x.F_LIC == req.PendingRequest.SENDER_ID);
-                    if (license != null)
+                    PendingRequestStatus pendingRequstStatus = new PendingRequestStatus();
+                    var reqModel = new ApiRequestModel();
+                    pendingRequstStatus.RequestId = req.ID;
+                    var licenseDetail = facilityLicense.FirstOrDefault(x => x.F_LIC == req.FacilityId);
+                    pendingRequstStatus.RequestId = req.ID;
+                    if (licenseDetail != null)
                     {
-                        var patErxEncounter = patErxEncounters.FirstOrDefault(x => x.ERX_NO == req.PendingRequest.ERX_NO);
-                        if(patErxEncounter != null)
+                        log.Info($"Start processing pending request {req.ID}");
+                        if (!string.IsNullOrEmpty(req.PAYLOAD))
                         {
-                            var physicianCred = physicianCreddetails.FirstOrDefault(x => (x.F_ID == req.PendingRequest.SENDER_ID) && (x.C_LIC == patErxEncounter.CLINICIAN_ID));
-                            if(physicianCred != null)
-                            {
-                                var requestXML = await ClsGenerateERXxml.GetInstance.GenerateXMLFile(req.PendingRequest.ERX_NO);
-                                if (!string.IsNullOrEmpty(requestXML))
+                            try
+                            {                              
+                                var response = new ApiResponseModel();
+                                reqModel.Auth = new DomainModel.Models.Common.AuthDetail { F_LIC = licenseDetail.F_LIC, F_USER = licenseDetail.F_USER, F_PWD = licenseDetail.F_PWD };
+                                var searchQuery = "";
+                                switch (req.REQUEST_TYPE.ToUpper())
                                 {
+                                    case "ERX-NEW-TRANSACTION":
+                                        reqModel.Method = HttpMethod.Get;                                        
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/ERX/GetNew";
+                                        reqModel.RequestType = "ERX-NEW-TRANSACTION";
+                                        response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
+                                        if (response.StatusCode == 200)
+                                        {                                           
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
+                                    case "ERX-SEARCH-TRANSACTION":                                       
+                                        reqModel.Method = HttpMethod.Get;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/erx/search";
+                                        reqModel.RequestType = "ERX-SEARCH-TRANSACTION";
+                                        response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
+                                        if (response.StatusCode == 200)
+                                        {                                            
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
 
+                                    case "ERX-DOWNLOAD-TRANSACTION":
+                                        reqModel.Method = HttpMethod.Post;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/erx/view";
+                                        reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";                                        
+                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
+                                        if (response.StatusCode == 200)
+                                        {                                           
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
                                 }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                log.WarnFormat($"There is no physician credentials found for facility {req.PendingRequest.SENDER_ID} and ERX {req.PendingRequest.ERX_NO} and clinician Id {patErxEncounter.CLINICIAN_ID}");
+                                pendingRequstStatus.Status = "ERROR";
+                                pendingRequstStatus.IsProcessing = -1;
+                                pendingRequstStatus.ErrorMessage = ex.Message;
+                                log.Error($"Error in Process Pending Request for {req.ID} - {ex.Message}", ex);
                             }
                         }
                         else
                         {
-                            log.WarnFormat($"There is no Pat Encounter found for facility {req.PendingRequest.SENDER_ID} and ERX {req.PendingRequest.ERX_NO}");
+                            pendingRequstStatus.Status = "ERROR";
+                            pendingRequstStatus.IsProcessing = -1;
+                            pendingRequstStatus.ErrorMessage = "Invalid Request Payload";
+                            log.Error($"Error in Process Pending Request for {req.ID} - Invalid Request Payload");
                         }
                     }
                     else
                     {
-                        log.WarnFormat($"There is no facility license found for facility {req.PendingRequest.SENDER_ID}");
+                        pendingRequstStatus.Status = "AUTHENTICATION FALIURE";
+                        pendingRequstStatus.IsProcessing = -3;
+                        pendingRequstStatus.ErrorMessage = "Auto Token Not Recieved";
+                        log.Error($"Error in Process Pending Request for {req.ID} - Auth Token can't be null or empty.");
                     }
-                  
-                    //pendingRequstStatus.RequestId = req.ID;
-                    //if (!string.IsNullOrEmpty(authTokenResponse.AccessToken))
-                    //{
-                    //    log.Info($"Start processing pending request {req.ID}");
-                    //    if (!string.IsNullOrEmpty(req.PAYLOAD))
-                    //    {
-                    //        try
-                    //        {
-                    //            var reqModel = new ApiRequestModel();
-                    //            var response = new ApiResponseModel();
-                    //            reqModel.AuthToken = authTokenResponse.AccessToken;
-                    //            reqModel.CustomHeaders.Add(new CustomHeaders { Key = "MalaffiAPIKey", Value = settings.ApiKey });
-                    //            var searchQuery = "";
-                    //            switch (req.REQUEST_TYPE.ToUpper())
-                    //            {
-                    //                case "E-PRESCRIPTION":
-                    //                    reqModel.Method = HttpMethod.Get;
-                    //                    var model = JsonConvert.DeserializeObject<EPrescriptionSearchRequestModel>(req.PAYLOAD);
-                    //                    searchQuery = GetSearchQuery(model, searchQuery);
-                    //                    reqModel.ApiUrl = $"{settings.ApiBaseUrl}/Eprescription/Integration/v1/{ServiceEndpoints.GetEPrescription}?{searchQuery}";
-                    //                    reqModel.RequestType = "E-PRESCRIPTIONS";
-                    //                    response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
-                    //                    if (response.StatusCode == 200)
-                    //                    {
-                    //                        SaveEPrescriptionResponse(req.ID, response, pendingRequstStatus);
-                    //                    }
-                    //                    SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
-                    //                    break;
-                    //                case "E-PRESCRIPTION-DETAILS":
-                    //                    var drm = JsonConvert.DeserializeObject<EPrescriptionDetailRequestModel>(req.PAYLOAD);
-                    //                    searchQuery = GetSearchQuery(drm, searchQuery);
-                    //                    if (!string.IsNullOrEmpty(drm.EPrescriptionID))
-                    //                    {
-                    //                        searchQuery += $"&EPrescriptionID={drm.EPrescriptionID}";
-                    //                    }
-                    //                    reqModel.Method = HttpMethod.Get;
-                    //                    reqModel.ApiUrl = $"{settings.ApiBaseUrl}/Eprescription/Integration/v1/{ServiceEndpoints.GetEPrescriptionDetail}?{searchQuery}";
-                    //                    reqModel.RequestType = "E-PRESCRIPTION-DETAILS";
-                    //                    response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
-                    //                    if (response.StatusCode == 200)
-                    //                    {
-                    //                        SaveEPrescriptionDetailResponse(req.ID, Convert.ToInt32(drm.EPrescriptionID), response, pendingRequstStatus);
-                    //                    }
-                    //                    SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
-                    //                    break;
-
-                    //                case "MANAGE-DISPENSE":
-                    //                    reqModel.Method = HttpMethod.Post;
-                    //                    reqModel.ApiUrl = $"{settings.ApiBaseUrl}/Eprescription/Integration/v1/{ServiceEndpoints.ManageDispense}";
-                    //                    reqModel.RequestType = "MANAGE-DISPENSE";
-                    //                    var obj = JsonConvert.DeserializeObject<ManageDispenseRequest>(req.PAYLOAD);
-                    //                    reqModel.Data = req.PAYLOAD;
-                    //                    response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
-                    //                    if (response.StatusCode == 200)
-                    //                    {
-                    //                        SaveDispenseResponse(req.ID, obj.EPrescriptionID, response, pendingRequstStatus);
-                    //                    }
-                    //                    SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
-                    //                    break;
-                    //            }
-                    //        }
-                    //        catch (Exception ex)
-                    //        {
-                    //            pendingRequstStatus.Status = "ERROR";
-                    //            pendingRequstStatus.IsProcessing = -1;
-                    //            pendingRequstStatus.ErrorMessage = ex.Message;
-                    //            log.Error($"Error in Process Pending Request for {req.ID} - {ex.Message}", ex);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        pendingRequstStatus.Status = "ERROR";
-                    //        pendingRequstStatus.IsProcessing = -1;
-                    //        pendingRequstStatus.ErrorMessage = "Invalid Request Payload";
-                    //        log.Error($"Error in Process Pending Request for {req.ID} - Invalid Request Payload");
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    pendingRequstStatus.Status = "AUTHENTICATION FALIURE";
-                    //    pendingRequstStatus.IsProcessing = -3;
-                    //    pendingRequstStatus.ErrorMessage = "Auto Token Not Recieved";
-                    //    log.Error($"Error in Process Pending Request for {req.ID} - Auth Token can't be null or empty.");
-                    //}
-
-                    //log.Info($"Update Pending Request Payload : {JsonConvert.SerializeObject(pendingRequests)}");
-                    //OracleDataAccessRepository.GetInstance.UpdatePendingRequestStatus(pendingRequstStatus);
-                    //log.Info($"Completed processing pending request {req.ID}");
+                    
+                    OracleDataAccessRepository.GetInstance.UpdatePendingRequestStatus(pendingRequstStatus);
+                    log.Info($"Completed processing pending request {req.ID}");
                 }
             }
             else
@@ -167,37 +123,6 @@ namespace ApplicationInsight
             }
         }
 
-        //private static string GetSearchQuery(EPrescriptionSearchRequestModel model, string searchQuery)
-        //{
-        //    if (!string.IsNullOrEmpty(model.SearchType))
-        //    {
-        //        searchQuery = $"SearchType={model.SearchType}";
-        //    }
-        //    if (!string.IsNullOrEmpty(model.SearchText))
-        //    {
-        //        if (string.IsNullOrEmpty(searchQuery))
-        //        {
-        //            searchQuery += $"SearchText={ model.SearchText}";
-        //        }
-        //        else
-        //        {
-        //            searchQuery += $"&SearchText={ model.SearchText}";
-        //        }
-        //    }
-        //    if (!string.IsNullOrEmpty(model.Dob))
-        //    {
-        //        if (string.IsNullOrEmpty(searchQuery))
-        //        {
-        //            searchQuery += $"DOB={ model.Dob}";
-        //        }
-        //        else
-        //        {
-        //            searchQuery += $"&DOB={ model.Dob}";
-        //        }
-        //    }
-
-        //    return searchQuery;
-        //}
 
         //private void SaveEPrescriptionResponse(int requestId, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
         //{
@@ -324,37 +249,20 @@ namespace ApplicationInsight
         //    }
         //}
 
-        //private void SetPendingRequest(string reqType, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
-        //{
-        //    if (response.StatusCode == 200)
-        //    {
-        //        pendingRequstStatus.Response = response.Data;
-        //        pendingRequstStatus.Status = "SUCCESS";
-        //        pendingRequstStatus.IsProcessing = 1;
-        //    }
-        //    else if (response.StatusCode == 400)
-        //    {
-        //        pendingRequstStatus.Status = "ERROR";
-        //        pendingRequstStatus.IsProcessing = -1;
-        //        pendingRequstStatus.ErrorMessage = "BAD REQUEST";
-        //    }
-        //    else
-        //    {
-        //        if (reqType.ToUpper() == "MANAGE-DISPENSE")
-        //        {
-        //            pendingRequstStatus.Status = "COMMUNICATION ERROR";
-        //            pendingRequstStatus.IsProcessing = -2;
-        //            pendingRequstStatus.ErrorMessage = "An unexpected error occurred on communication channel with malaffi. We will retry again later. Please proceed with dispensing.";
-        //        }
-        //        else
-        //        {
-        //            pendingRequstStatus.Status = "COMMUNICATION ERROR";
-        //            pendingRequstStatus.IsProcessing = -3;
-        //            pendingRequstStatus.ErrorMessage = "An unexpected error occurred on communication channel with malaffi.";
-        //        }
-
-        //    }
-        //}
-
+        private void SetPendingRequest(string reqType, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
+        {
+            if (response.StatusCode == 200)
+            {
+                pendingRequstStatus.Response = response.Data;
+                pendingRequstStatus.Status = "SUCCESS";
+                pendingRequstStatus.IsProcessing = 1;
+            }
+            else if (response.StatusCode == 400)
+            {
+                pendingRequstStatus.Status = "ERROR";
+                pendingRequstStatus.IsProcessing = -1;
+                pendingRequstStatus.ErrorMessage = "BAD REQUEST";
+            }          
+        }
     }
 }

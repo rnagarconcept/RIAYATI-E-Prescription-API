@@ -55,12 +55,6 @@
     <Compile Include="APIConnectService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestProcessingService.cs" />
-    <Compile Include="Services\ERXDHAService.cs" />
-    <Compile Include="Services\ERXDHAServiceBase.cs" />
-    <Compile Include="Services\ErxDHAWebRequestService.cs" />
-    <Compile Include="Services\IERXDHAService.cs" />
-    <Compile Include="Services\SoapMessageEnevlopService.cs" />
-    <Compile Include="Services\XmlGenerationService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -77,27 +71,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Services\SoapMessages\downloadTransactionFileSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Services\SoapMessages\geteRxTransactionSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Services\SoapMessages\getNewTransactionsSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Services\SoapMessages\searchTransactionsSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Services\SoapMessages\setTransactionDownloadedSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Services\SoapMessages\uploadERxAuthorizationSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Services\SoapMessages\uploadErxRequestSoapBody.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Folder Include="Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

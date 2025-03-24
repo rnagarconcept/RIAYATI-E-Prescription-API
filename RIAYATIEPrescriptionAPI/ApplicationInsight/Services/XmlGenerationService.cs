@@ -17,6 +17,7 @@ namespace ApplicationInsight.Services
     {
         private readonly ILog log = LogManager.GetLogger(typeof(ClsGenerateERXxml));
         private static readonly Lazy<ClsGenerateERXxml> lazy = new Lazy<ClsGenerateERXxml>(() => new ClsGenerateERXxml());
+        private static string baseFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
         private ClsGenerateERXxml()
         {
         }
@@ -35,7 +36,7 @@ namespace ApplicationInsight.Services
                 var dsXmlData = GetDBSet(eRxNo);
                 if (dsXmlData != null && dsXmlData.Tables["Header"].Rows.Count > 0)
                 {
-                    string strPath = @"C:\Concepts\eRx Request-" + DateTime.Now.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                    string strPath = $"{baseFilePath}\\{DateTime.Now.ToString()}";
                     if (!System.IO.Directory.Exists(strPath)) System.IO.Directory.CreateDirectory(strPath);
                     //dsXmlData.WriteXml(strPath+@"\DHA.xml");
                     string stXMLFileName = dsXmlData.Tables["Prescription"].Rows[0]["ID"].ToString().Trim() + ".xml";

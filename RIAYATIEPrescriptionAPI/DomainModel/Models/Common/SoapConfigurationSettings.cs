@@ -5,8 +5,10 @@ using System.Web;
 
 namespace DomainModel.Models.Common
 {
-    public class SoapConfigurationSettings
+    public class AuthDetail
     {
-        public string FacilityLicenseKey { get; set; }
+        public int F_LIC { get; set; }
+        public string F_USER { get; set; }
+        public string F_PWD { get; set; }
     }
 }
