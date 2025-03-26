@@ -56,6 +56,17 @@ namespace ApplicationInsight
                                 var searchQuery = "";
                                 switch (req.REQUEST_TYPE.ToUpper())
                                 {
+                                    case "AUTHORIZ-NEW-TRANSACTION":
+                                        reqModel.Method = HttpMethod.Get;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/Authorization/GetNew";
+                                        reqModel.RequestType = "AUTHORIZ-NEW-TRANSACTION";
+                                        response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
+                                        if (response.StatusCode == 200)
+                                        {
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
+
                                     case "ERX-NEW-TRANSACTION":
                                         reqModel.Method = HttpMethod.Get;                                        
                                         reqModel.ApiUrl = $"{ApiBaseURL}/ERX/GetNew";
@@ -78,12 +89,38 @@ namespace ApplicationInsight
                                         break;
 
                                     case "ERX-DOWNLOAD-TRANSACTION":
-                                        reqModel.Method = HttpMethod.Post;
+                                        reqModel.Method = HttpMethod.Get;
                                         reqModel.ApiUrl = $"{ApiBaseURL}/erx/view";
                                         reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";                                        
                                         response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         if (response.StatusCode == 200)
                                         {                                           
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
+
+                                    case "ERX-UPLOAD-TRANSACTION":
+                                        var erxUploadModel = JsonConvert.DeserializeObject<UploadErxRequestTransactionRequestModel>(req.PAYLOAD);
+                                            reqModel.Method = HttpMethod.Post;                                            
+                                            reqModel.Data = req.PAYLOAD;
+                                            reqModel.ApiUrl = $"{ApiBaseURL}/ERX/PostRequest";
+                                            reqModel.RequestType = "ERX-UPLOAD-TRANSACTION";
+                                            response = await APIConnectService.GetInstance.SendAsync(reqModel);
+                                            if (response.StatusCode == 200)
+                                            {
+                                            }
+                                            SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
+
+                                    case "ERX-SET-TRANSACTION-DOWNLOAD":
+                                        var downloadModel = JsonConvert.DeserializeObject<SetTransactionDownloadedRequestModel>(req.PAYLOAD);
+                                        reqModel.Method = HttpMethod.Post;
+                                        reqModel.Parameters.Add("Id", downloadModel.Id); // Dictionary type string,string                                     
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/ERX/SetDownloaded";
+                                        reqModel.RequestType = "ERX-SET-TRANSACTION-DOWNLOAD";
+                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
+                                        if (response.StatusCode == 200)
+                                        {
                                         }
                                         SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
                                         break;

@@ -5,8 +5,8 @@ using System.Web;
 
 namespace DomainModel.Models.Request
 {
-    public class SetTransactionDownloadedRequestModel : ModelBase
+    public class SetTransactionDownloadedRequestModel
     {
-        public string FieldID { get; set; }
+        public string Id { get; set; }
     }
 }

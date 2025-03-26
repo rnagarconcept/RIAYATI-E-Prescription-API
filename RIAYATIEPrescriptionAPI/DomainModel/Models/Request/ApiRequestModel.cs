@@ -22,6 +22,7 @@ namespace DomainModel.Models.Request
         public string RequestType { get; set; }
         public List<CustomHeaders> CustomHeaders { get; set; }
         public AuthDetail Auth { get; set; }
+        public Dictionary<string,string> Parameters { get; set; }
     }
 
     public class CustomHeaders

@@ -34,11 +34,37 @@ namespace ApplicationInsight
         {            
             try
             {
+                HttpResponseMessage response = null;
                 responseModel = new ApiResponseModel();
                 HttpClient client = new HttpClient { BaseAddress = new Uri(model.ApiUrl) };
                 client.DefaultRequestHeaders.Add("Username", model.Auth.F_USER);
                 client.DefaultRequestHeaders.Add("Password", model.Auth.F_PWD);
-                HttpResponseMessage response = await client.GetAsync(model.EndPoint);
+                if (model.CustomHeaders != null && model.CustomHeaders.Count > 0)
+                {
+                    foreach (var header in model.CustomHeaders)
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
+                }
+                if (model.Data != null)
+                {                    
+                    var jsonContent = model.Data;
+                    message.Content = new StringContent(jsonContent.ToString(), Encoding.UTF8, "application/json");
+                }
+                
+                if(model.Method == HttpMethod.Post)
+                {
+                    FormUrlEncodedContent urlParams = null;
+                    if (model.Parameters != null && model.Parameters.Count > 0)
+                    {
+                        urlParams = new FormUrlEncodedContent(model.Parameters);
+                    }
+                    response = await client.PostAsync(model.EndPoint,urlParams);
+                }
+                if(model.Method == HttpMethod.Get)
+                {
+                    response = await client.GetAsync(model.EndPoint);
+                }               
                 if (response != null)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
