@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DomainModel.Models.Request
 {
-    public class DownloadTransactionRequestModel
+   public class ErxAuthorizationTransactionModel
     {
-        public int Id { get; set; }
     }
 }

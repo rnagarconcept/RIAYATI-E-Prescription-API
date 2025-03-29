@@ -45,37 +45,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Common\Activity.cs" />
+    <Compile Include="Models\Common\Authorization.cs" />
     <Compile Include="Models\Common\ConfigurationSettingsModel.cs" />
+    <Compile Include="Models\Common\Diagnosis.cs" />
+    <Compile Include="Models\Common\Encounter.cs" />
+    <Compile Include="Models\Common\ErxAuthorization.cs" />
+    <Compile Include="Models\Common\Frequency.cs" />
     <Compile Include="Models\Common\GlobalConstants.cs" />
+    <Compile Include="Models\Common\Header.cs" />
     <Compile Include="Models\Common\LicenseDetailsModel.cs" />
     <Compile Include="Models\Common\MessageEnevlop.cs" />
+    <Compile Include="Models\Common\Observation.cs" />
+    <Compile Include="Models\Common\Patient.cs" />
     <Compile Include="Models\Common\PendingRequest.cs" />
     <Compile Include="Models\Common\PendingRequestsModel.cs" />
+    <Compile Include="Models\Common\Prescription.cs" />
     <Compile Include="Models\Common\SoapConfigurationSettings.cs" />
     <Compile Include="Models\Request\ApiRequestModel.cs" />
+    <Compile Include="Models\Request\CheckPrescriptionActivityStatusModel.cs" />
     <Compile Include="Models\Request\DownloadTransactionRequestModel.cs" />
+    <Compile Include="Models\Request\ErxAuthorizationTransactionModel.cs" />
     <Compile Include="Models\Request\GeteRxTransactionsRequestModel.cs" />
     <Compile Include="Models\Request\ModelBase.cs" />
     <Compile Include="Models\Request\SearchTransactionRequestModel.cs" />
     <Compile Include="Models\Request\SetTransactionDownloadedRequestModel.cs" />
     <Compile Include="Models\Request\UploadERxAuthorizationRequestModel.cs" />
     <Compile Include="Models\Request\UploadERxRequestRequestModel.cs" />
+    <Compile Include="Models\Request\UploadErxRequestTransactionRequestModel.cs" />
     <Compile Include="Models\Response\ApiResponseModel.cs" />
     <Compile Include="Models\Response\FacilityLoginResponseModel.cs" />
-    <Compile Include="Models\Response\OrderingPhyResponseModel.cs" />
-    <Compile Include="Models\Response\PatPendingRxResponseModel.cs" />
-    <Compile Include="Models\Response\PatPrescriptionHeaderResponseModel.cs" />
-    <Compile Include="Models\Response\PatRefNumResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxActivityResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxDiagnosisResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxEncounterResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxObservationResponseModel.cs" />
-    <Compile Include="Models\Response\PatRxPatientTagResponseModel.cs" />
     <Compile Include="Models\Response\PendingRequestStatus.cs" />
-    <Compile Include="Models\Response\PhysicianLoginResponseModel.cs" />
-    <Compile Include="Models\Response\RxHeaderResponseModel.cs" />
     <Compile Include="Models\Response\TokenResponseModel.cs" />
-    <Compile Include="Models\Response\XmlTypeClobResponseModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

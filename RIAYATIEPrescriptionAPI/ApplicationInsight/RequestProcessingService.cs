@@ -56,17 +56,7 @@ namespace ApplicationInsight
                                 var searchQuery = "";
                                 switch (req.REQUEST_TYPE.ToUpper())
                                 {
-                                    case "AUTHORIZ-NEW-TRANSACTION":
-                                        reqModel.Method = HttpMethod.Get;
-                                        reqModel.ApiUrl = $"{ApiBaseURL}/Authorization/GetNew";
-                                        reqModel.RequestType = "AUTHORIZ-NEW-TRANSACTION";
-                                        response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
-                                        if (response.StatusCode == 200)
-                                        {
-                                        }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
-                                        break;
-
+                                   
                                     case "ERX-NEW-TRANSACTION":
                                         reqModel.Method = HttpMethod.Get;                                        
                                         reqModel.ApiUrl = $"{ApiBaseURL}/ERX/GetNew";
@@ -89,27 +79,52 @@ namespace ApplicationInsight
                                         break;
 
                                     case "ERX-DOWNLOAD-TRANSACTION":
+                                        var erxDownloadModel = JsonConvert.DeserializeObject<DownloadTransactionRequestModel>(req.PAYLOAD);
                                         reqModel.Method = HttpMethod.Get;
-                                        reqModel.ApiUrl = $"{ApiBaseURL}/erx/view";
-                                        reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";                                        
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/erx/view?id={erxDownloadModel.Id}";
+                                        reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";
                                         response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         if (response.StatusCode == 200)
-                                        {                                           
+                                        {
                                         }
                                         SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
                                         break;
 
-                                    case "ERX-UPLOAD-TRANSACTION":
-                                        var erxUploadModel = JsonConvert.DeserializeObject<UploadErxRequestTransactionRequestModel>(req.PAYLOAD);
-                                            reqModel.Method = HttpMethod.Post;                                            
-                                            reqModel.Data = req.PAYLOAD;
-                                            reqModel.ApiUrl = $"{ApiBaseURL}/ERX/PostRequest";
-                                            reqModel.RequestType = "ERX-UPLOAD-TRANSACTION";
+                                    case "ERX_CHECK_ACTIVITY_STATUS":
+                                            var activityStatusModel = JsonConvert.DeserializeObject<CheckPrescriptionActivityStatusModel>(req.PAYLOAD);
+                                            reqModel.Method = HttpMethod.Get;
+                                            reqModel.ApiUrl = $"{ApiBaseURL}/ERX/CheckActivityStatus?id={activityStatusModel.TransactionId}";
+                                            reqModel.RequestType = "ERX_CHECK_ACTIVITY_STATUS";
                                             response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                             if (response.StatusCode == 200)
                                             {
                                             }
                                             SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
+
+                                    case "ERX-UPLOAD-TRANSACTION":
+                                        var erxUploadModel = JsonConvert.DeserializeObject<UploadErxRequestTransactionRequestModel>(req.PAYLOAD);
+                                        reqModel.Method = HttpMethod.Post;
+                                        reqModel.Data = req.PAYLOAD;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/ERX/PostRequest";
+                                        reqModel.RequestType = "ERX-UPLOAD-TRANSACTION";
+                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
+                                        if (response.StatusCode == 200)
+                                        {
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        break;
+
+                                    case "ERX_UPLOAD_AUTH_TRANSACTION":
+                                        var authTranModel = JsonConvert.DeserializeObject<DownloadTransactionRequestModel>(req.PAYLOAD);
+                                        reqModel.Method = HttpMethod.Get;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/erx/view?id={authTranModel.Id}";
+                                        reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";
+                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
+                                        if (response.StatusCode == 200)
+                                        {
+                                        }
+                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
                                         break;
 
                                     case "ERX-SET-TRANSACTION-DOWNLOAD":
