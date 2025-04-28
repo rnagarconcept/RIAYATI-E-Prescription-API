@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Types;
+using System;
 using System.Data;
 using System.Data.Common;
+using System.Text;
 
 namespace DataAccess
 {
@@ -11,7 +13,7 @@ namespace DataAccess
             if (reader[columnName] is DBNull)
                 return 0;
             var ordinal = reader.GetOrdinal(columnName);
-            return reader.GetInt32(ordinal);
+            return Convert.ToInt32(reader.GetValue(ordinal));
         }
 
         public static string ToString(this DbDataReader reader, string columnName)
@@ -44,6 +46,16 @@ namespace DataAccess
                 return (DateTime?)null;
             var ordinal = reader.GetOrdinal(columnName);
             return reader.GetDateTime(ordinal);
+        }
+
+        public static string ToBlobString(this DbDataReader reader, string columnName)
+        {
+            if (reader[columnName] is DBNull)
+                return string.Empty;
+            int columnIndex = reader.GetOrdinal(columnName);            
+            byte[] blobBytes = (byte[])reader.GetValue(columnIndex);           
+            string result = Encoding.UTF8.GetString(blobBytes);
+            return result;            
         }
     }
 }

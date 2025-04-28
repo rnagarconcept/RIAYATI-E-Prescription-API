@@ -16,6 +16,6 @@ namespace DomainModel.Models.Common
         public string End { get; set; }
         public string Limit { get; set; }
         public string Comments { get; set; }
-        public List<Activity> Activity { get; set; }
+        public List<ActivityEx> Activity { get; set; }
     }
 }

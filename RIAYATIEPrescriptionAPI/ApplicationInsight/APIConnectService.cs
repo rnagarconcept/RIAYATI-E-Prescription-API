@@ -16,7 +16,7 @@ namespace ApplicationInsight
     {
         ILog log = LogManager.GetLogger(typeof(APIConnectService));
         public readonly HttpClient httpClient;
-        public readonly HttpRequestMessage message;
+        public HttpRequestMessage message;
         public ApiResponseModel responseModel;
         public static readonly string DbStore = ConfigurationManager.AppSettings["DBStore"];
         private static readonly Lazy<APIConnectService> lazy = new Lazy<APIConnectService>(() => new APIConnectService());
@@ -49,21 +49,22 @@ namespace ApplicationInsight
                 if (model.Data != null)
                 {                    
                     var jsonContent = model.Data;
+                    message = new HttpRequestMessage();
                     message.Content = new StringContent(jsonContent.ToString(), Encoding.UTF8, "application/json");
                 }
                 
                 if(model.Method == HttpMethod.Post)
                 {
                     FormUrlEncodedContent urlParams = null;
-                    if (model.Parameters != null && model.Parameters.Count > 0)
-                    {
-                        urlParams = new FormUrlEncodedContent(model.Parameters);
-                    }
-                    response = await client.PostAsync(model.EndPoint,urlParams);
+                    //if (model.Parameters != null && model.Parameters.Count > 0)
+                    //{
+                    //    urlParams = new FormUrlEncodedContent(model.Parameters);
+                    //}
+                    response = await client.PostAsync(model.EndPoint,message.Content);
                 }
                 if(model.Method == HttpMethod.Get)
                 {
-                    response = await client.GetAsync(model.EndPoint);
+                    response = await client.PostAsync(model.EndPoint, message.Content);
                 }               
                 if (response != null)
                 {

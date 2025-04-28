@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccess
@@ -32,36 +33,43 @@ namespace DataAccess
         public List<FacilityLoginResponseModel> GetFacilityLicenseDetails()
         {
             List<FacilityLoginResponseModel> result = CacheManager.Instance.GetCache<List<FacilityLoginResponseModel>>(GlobalConstants.FACILITY_LICENSES);
-            if (result == null || result.Count == 0)
+            try
             {
-                result = new List<FacilityLoginResponseModel>();
-                OracleConnection con = null;
-                using (con = OpenConnection())
+                if (result == null || result.Count == 0)
                 {
-                    var OraCmd = new OracleCommand();
-                    OraCmd.Connection = con;
-                    OraCmd.CommandText = $"{PackageName}.GET_FACILITY_CREDENATIAL";
-                    OraCmd.CommandType = CommandType.StoredProcedure;
-                    OraCmd.Parameters.Add(new OracleParameter("p_refcur", OracleDbType.RefCursor, ParameterDirection.Output));
-                    if (con.State == ConnectionState.Closed)
+                    result = new List<FacilityLoginResponseModel>();
+                    OracleConnection con = null;
+                    using (con = OpenConnection())
                     {
-                        con.Open();
-                    }
-                    OraCmd.ExecuteNonQuery();
-                    var reader = ((OracleRefCursor)OraCmd.Parameters["p_refcur"].Value).GetDataReader();
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
+                        var OraCmd = new OracleCommand();
+                        OraCmd.Connection = con;
+                        OraCmd.CommandText = $"{PackageName}.GET_FACILITY_CREDENATIAL";
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.Parameters.Add(new OracleParameter("p_refcur", OracleDbType.RefCursor, ParameterDirection.Output));
+                        if (con.State == ConnectionState.Closed)
                         {
-                            var obj = new FacilityLoginResponseModel();
-                            obj.F_LIC = reader.ToInt32("F_LIC");
-                            obj.F_USER = reader.ToString("F_USER");
-                            obj.F_PWD = reader.ToString("F_PWD");
-                            result.Add(obj);
+                            con.Open();
                         }
-                        CacheManager.Instance.SetCache(GlobalConstants.FACILITY_LICENSES, result, LicenseExpiration);
+                        OraCmd.ExecuteNonQuery();
+                        var reader = ((OracleRefCursor)OraCmd.Parameters["p_refcur"].Value).GetDataReader();
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                var obj = new FacilityLoginResponseModel();                               
+                                obj.F_LIC = reader.ToInt32("F_LIC");
+                                obj.F_USER = reader.ToString("F_USER");
+                                obj.F_PWD = reader.ToString("F_PWD");
+                                result.Add(obj);
+                            }
+                            CacheManager.Instance.SetCache(GlobalConstants.FACILITY_LICENSES, result, LicenseExpiration);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
             return result;
         }
@@ -133,12 +141,11 @@ namespace DataAccess
                         {
                             while (reader.Read())
                             {
-                                var obj = new PendingRequestsModel();                              
-                                obj.REQUEST_TYPE = reader.ToString("RECEIVER_ID");                               
+                                var obj = new PendingRequestsModel();
                                 obj.ID = reader.ToInt32("ID");
-                                obj.REQUEST_TYPE = reader.ToString("REQUEST_TYPE");
-                                obj.PAYLOAD = reader.ToString("PAYLOAD");
-                                obj.FacilityId = reader.ToInt32("FacilityId");
+                                obj.FacilityId = reader.ToInt32("FACILITY_ID");
+                                obj.REQUEST_TYPE = reader.ToString("REQUEST_TYPE");                               
+                                obj.PAYLOAD = reader.ToBlobString("PAYLOAD");
                                 result.Add(obj);                               
                             }
                         }
@@ -196,5 +203,196 @@ namespace DataAccess
                 log.Error($"Error in Update Pending Requests for Request {obj.RequestId} Error : {ex.Message}");
             }
         }
-    }
+        
+        public int SaveErxResponse(int requestId, ErxResponseModel obj)
+        {
+            OracleConnection con = null;           
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (OracleCommand OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESPONSE";
+                        OraCmd.Parameters.Add("P_REQ_ID", requestId);
+                        OraCmd.Parameters.Add("P_SenderID", obj.ErxAuthorization.Header.SenderID);
+                        OraCmd.Parameters.Add("P_ReceiverID", obj.ErxAuthorization.Header.ReceiverID);
+                        OraCmd.Parameters.Add("P_TransactionDate", obj.ErxAuthorization.Header.TransactionDate);
+                        OraCmd.Parameters.Add("P_RecordCount", obj.ErxAuthorization.Header.RecordCount);
+                        OraCmd.Parameters.Add("P_DispositionFlag", obj.ErxAuthorization.Header.DispositionFlag);
+                        OraCmd.Parameters.Add("P_PayerID", obj.ErxAuthorization.Header.PayerID);                       
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();                       
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error GetPendingRequests {ex.Message}", ex);
+            }
+            return 1;
+        }
+
+        public void SAVE_ERX_RESPONSE_AUTHORIZATION(int requestId, ErxResponseModel obj)
+        {
+            OracleConnection con = null;
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (OracleCommand OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESPONSE_AUTHORIZATION";
+                        OraCmd.Parameters.Add("P_REQ_ID", requestId);
+                        OraCmd.Parameters.Add("P_AUTH_ID", obj.ErxAuthorization.Authorization.ID);
+                        OraCmd.Parameters.Add("P_IDPayer", obj.ErxAuthorization.Authorization.IDPayer);
+                        OraCmd.Parameters.Add("P_DenialCode", obj.ErxAuthorization.Authorization.DenialCode);
+                        OraCmd.Parameters.Add("P_Start_Date", obj.ErxAuthorization.Authorization.Start);
+                        OraCmd.Parameters.Add("P_End_Date", obj.ErxAuthorization.Authorization.End);
+                        
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error GetPendingRequests {ex.Message}", ex);
+            }           
+        }
+
+        public void SAVE_ERX_RESPONSE_AUTHORIZATION_ACTIVITY(int requestId,int authId, List<ActivityEx> activities)
+        {
+            OracleConnection con = null;
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (var OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.PAT_ERX_AUTHORIZATION_ACTIVITY";
+                        
+                        OraCmd.Parameters.Add(new OracleParameter("P_AUTH_ID", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_REQ_ID", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Activity_Type", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Code", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Quantity", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Net", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_List", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_PatientShare", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_PaymentAmount", OracleDbType.Int32));
+
+                        int[] P_AUTH_ID = new int[activities.Count];
+                        int[] P_REQ_ID = new int[activities.Count];
+                        string[] P_Activity_Type = new string[activities.Count];
+                        string[] P_Code = new string[activities.Count];
+                        string[] P_Quantity = new string[activities.Count];
+                        string[] P_Net = new string[activities.Count];
+                        string[] P_List = new string[activities.Count];
+                        string[] P_PatientShare = new string[activities.Count];
+                        string[] P_PaymentAmount = new string[activities.Count];
+
+                        for (int i = 0; i < activities.Count; i++)
+                        {
+                            P_AUTH_ID[i] = authId;
+                            P_REQ_ID[i] = requestId;
+                            P_Activity_Type[i] = activities[i].Type;
+                            P_Code[i] = activities[i].Code;
+                            P_Quantity[i] = activities[i].Quantity;
+                            P_Net[i] = activities[i].Net;
+                            P_List[i] = activities[i].List;
+                            P_PatientShare[i] = activities[i].PatientShare;
+                            P_PaymentAmount[i] = activities[i].PaymentAmount;
+                        }
+                        OraCmd.Parameters["P_AUTH_ID"].Value = P_AUTH_ID;
+                        OraCmd.Parameters["P_REQ_ID"].Value = P_REQ_ID;
+                        OraCmd.Parameters["P_Activity_Type"].Value = P_Activity_Type;
+                        OraCmd.Parameters["P_Code"].Value = P_Code;
+                        OraCmd.Parameters["P_Quantity"].Value = P_Quantity;
+                        OraCmd.Parameters["P_Net"].Value = P_Net;
+                        OraCmd.Parameters["P_List"].Value = P_List;
+                        OraCmd.Parameters["P_PatientShare"].Value = P_PatientShare;
+                        OraCmd.Parameters["P_PaymentAmount"].Value = P_PaymentAmount;
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();                                            
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error SAVE_ERX_RESPONSE_AUTHORIZATION_ACTIVITY {ex.Message}", ex);
+            }
+        }
+
+        public void SAVE_ERX_RESPONSE_AUTHORIZATION_ACTIVITY_OBS(int requestId, int authId, List<Observation> observations)
+        {
+            OracleConnection con = null;
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (var OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESPONSE_AUTH_ACT_OBSERVATION";
+
+                        OraCmd.Parameters.Add(new OracleParameter("P_ACTIVITY_ID", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_REQ_ID", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Type", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Code", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_VALUE", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_ValueType", OracleDbType.NVarchar2));
+                       
+                        int[] P_ACTIVITY_ID = new int[observations.Count];
+                        int[] P_REQ_ID = new int[observations.Count];
+                        string[] P_Type = new string[observations.Count];
+                        string[] P_Code = new string[observations.Count];
+                        string[] P_VALUE = new string[observations.Count];
+                        string[] P_ValueType = new string[observations.Count];
+                       
+                        for (int i = 0; i < observations.Count; i++)
+                        {
+                            P_ACTIVITY_ID[i] = authId;
+                            P_REQ_ID[i] = requestId;
+                            P_Type[i] = observations[i].Type;
+                            P_Code[i] = observations[i].Code;
+                            P_VALUE[i] = observations[i].Value;
+                            P_ValueType[i] = observations[i].ValueType;                           
+                        }
+                        OraCmd.Parameters["P_ACTIVITY_ID"].Value = P_ACTIVITY_ID;
+                        OraCmd.Parameters["P_REQ_ID"].Value = P_REQ_ID;
+                        OraCmd.Parameters["P_Type"].Value = P_Type;
+                        OraCmd.Parameters["P_Code"].Value = P_Code;
+                        OraCmd.Parameters["P_VALUE"].Value = P_VALUE;
+                        OraCmd.Parameters["P_ValueType"].Value = P_ValueType;                      
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error SAVE_ERX_RESPONSE_AUTHORIZATION_ACTIVITY_OBS {ex.Message}", ex);
+            }
+        }
+      }
 }

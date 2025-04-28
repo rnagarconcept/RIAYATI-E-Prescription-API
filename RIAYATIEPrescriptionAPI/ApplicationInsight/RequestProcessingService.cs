@@ -93,7 +93,8 @@ namespace ApplicationInsight
                                     case "ERX_CHECK_ACTIVITY_STATUS":
                                             var activityStatusModel = JsonConvert.DeserializeObject<CheckPrescriptionActivityStatusModel>(req.PAYLOAD);
                                             reqModel.Method = HttpMethod.Get;
-                                            reqModel.ApiUrl = $"{ApiBaseURL}/ERX/CheckActivityStatus?id={activityStatusModel.TransactionId}";
+                                            reqModel.ApiUrl = $"{ApiBaseURL}";
+                                            reqModel.EndPoint = $"ERX/CheckActivityStatus?id={activityStatusModel.TransactionId}";
                                             reqModel.RequestType = "ERX_CHECK_ACTIVITY_STATUS";
                                             response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                             if (response.StatusCode == 200)
@@ -106,7 +107,8 @@ namespace ApplicationInsight
                                         var erxUploadModel = JsonConvert.DeserializeObject<UploadErxRequestTransactionRequestModel>(req.PAYLOAD);
                                         reqModel.Method = HttpMethod.Post;
                                         reqModel.Data = req.PAYLOAD;
-                                        reqModel.ApiUrl = $"{ApiBaseURL}/ERX/PostRequest";
+                                        reqModel.ApiUrl = $"{ApiBaseURL}";
+                                        reqModel.EndPoint = "ERX/PostRequest";
                                         reqModel.RequestType = "ERX-UPLOAD-TRANSACTION";
                                         response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         if (response.StatusCode == 200)
@@ -116,10 +118,12 @@ namespace ApplicationInsight
                                         break;
 
                                     case "ERX_UPLOAD_AUTH_TRANSACTION":
-                                        var authTranModel = JsonConvert.DeserializeObject<DownloadTransactionRequestModel>(req.PAYLOAD);
-                                        reqModel.Method = HttpMethod.Get;
-                                        reqModel.ApiUrl = $"{ApiBaseURL}/erx/view?id={authTranModel.Id}";
-                                        reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";
+                                        var authTranModel = JsonConvert.DeserializeObject<UploadERxAuthorizationRequestModel>(req.PAYLOAD);
+                                        reqModel.Method = HttpMethod.Post;
+                                        reqModel.Data = req.PAYLOAD;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}";
+                                        reqModel.EndPoint = "ERX/PostAuthorization";
+                                        reqModel.RequestType = "ERX_UPLOAD_AUTH_TRANSACTION";                                        
                                         response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         if (response.StatusCode == 200)
                                         {
@@ -131,7 +135,8 @@ namespace ApplicationInsight
                                         var downloadModel = JsonConvert.DeserializeObject<SetTransactionDownloadedRequestModel>(req.PAYLOAD);
                                         reqModel.Method = HttpMethod.Post;
                                         reqModel.Parameters.Add("Id", downloadModel.Id); // Dictionary type string,string                                     
-                                        reqModel.ApiUrl = $"{ApiBaseURL}/ERX/SetDownloaded";
+                                        reqModel.ApiUrl = $"{ApiBaseURL}/";
+                                        reqModel.EndPoint = $"ERX/SetDownloaded?id={downloadModel.Id}";
                                         reqModel.RequestType = "ERX-SET-TRANSACTION-DOWNLOAD";
                                         response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         if (response.StatusCode == 200)

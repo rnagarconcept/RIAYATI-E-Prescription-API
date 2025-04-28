@@ -1,6 +1,7 @@
 ﻿using ApplicationInsight;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,20 +10,28 @@ namespace RIAYATIEPrescriptionHost
 {
     class Program
     {
+        private static readonly bool debugg = string.IsNullOrEmpty(ConfigurationManager.AppSettings["DEBUGG"])? false : Convert.ToBoolean(ConfigurationManager.AppSettings["DEBUGG"]) ;
         static void Main(string[] args)
         {
-            var awaitTask = RequestProcessingService.GetInstance.Process();
-            awaitTask.ContinueWith(task =>
+            if (debugg)
             {
-                if (task.Exception != null)
+                var awaitTask = RequestProcessingService.GetInstance.Process();
+                awaitTask.ContinueWith(task =>
                 {
-                    Console.WriteLine("Error: " + task.Exception.Message);
-                }
-                else
-                {
-                    Console.WriteLine("Completed!");
-                }
-            });
-        }
+                    if (task.Exception != null)
+                    {
+                        Console.WriteLine("Error: " + task.Exception.Message);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Completed!");
+                    }
+                });
+            }
+            else
+            {
+
+            }            
+        }       
     }
 }

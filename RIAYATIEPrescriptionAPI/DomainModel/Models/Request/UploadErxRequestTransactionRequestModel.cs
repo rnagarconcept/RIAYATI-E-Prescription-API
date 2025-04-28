@@ -11,10 +11,9 @@ namespace DomainModel.Models.Request
     {
         public UploadErxRequestTransactionRequestModel()
         {
-            Header = new Header();
-            Prescription = new Prescription();
+            ErxRequest = new ErxRequest();
         }
-        public Header Header { get; set; }
-        public Prescription Prescription { get; set; }
+
+        public ErxRequest ErxRequest { get; set; }
     }
 }

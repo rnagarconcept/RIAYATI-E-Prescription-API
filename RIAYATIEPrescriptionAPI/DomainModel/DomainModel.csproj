@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Common\ActivityEx.cs" />
     <Compile Include="Models\Common\Activity.cs" />
     <Compile Include="Models\Common\Authorization.cs" />
     <Compile Include="Models\Common\ConfigurationSettingsModel.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Models\Request\CheckPrescriptionActivityStatusModel.cs" />
     <Compile Include="Models\Request\DownloadTransactionRequestModel.cs" />
     <Compile Include="Models\Request\ErxAuthorizationTransactionModel.cs" />
+    <Compile Include="Models\Request\ErxRequest.cs" />
     <Compile Include="Models\Request\GeteRxTransactionsRequestModel.cs" />
     <Compile Include="Models\Request\ModelBase.cs" />
     <Compile Include="Models\Request\SearchTransactionRequestModel.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="Models\Response\ApiResponseModel.cs" />
     <Compile Include="Models\Response\FacilityLoginResponseModel.cs" />
     <Compile Include="Models\Response\PendingRequestStatus.cs" />
+    <Compile Include="Models\Response\Root.cs" />
     <Compile Include="Models\Response\TokenResponseModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
