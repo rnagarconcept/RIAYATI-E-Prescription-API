@@ -173,7 +173,7 @@ namespace DataAccess
                         OraCmd.Parameters.Add("P_ID", obj.RequestId);
                         OraCmd.Parameters.Add("P_IS_PROCESSING", obj.IsProcessing);
                         OraCmd.Parameters.Add("P_RESPONSE_STATUS_CODE", obj.Status);
-                        OraCmd.Parameters.Add("P_ERROR_MESSAGE", obj.ErrorMessage);
+                        OraCmd.Parameters.Add("P_ERROR_MESSAGE", obj.ErrorMessage);                        
                         if (obj.Response != null)
                         {
                             if (obj.Response.Length < 32000)
@@ -394,5 +394,113 @@ namespace DataAccess
                 log.Error($"Error SAVE_ERX_RESPONSE_AUTHORIZATION_ACTIVITY_OBS {ex.Message}", ex);
             }
         }
-      }
+      
+        public void SAVE_ERX_TRAN_RESPONSE(int requestId, TransactionResponseModel obj)
+        {
+            OracleConnection con = null;
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (OracleCommand OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = $"{PackageName}.SAVE_ERX_TRAN_RESPONSE";
+                        OraCmd.Parameters.Add("P_REQ_ID", requestId);
+                        OraCmd.Parameters.Add("P_StatusCode", obj.StatusCode);
+                        OraCmd.Parameters.Add("P_Message", obj.Message);
+                        OraCmd.Parameters.Add("P_UserMessage", obj.UserMessage);
+                        OraCmd.Parameters.Add("P_MemberValidation", obj.MemberValidation);
+                        OraCmd.Parameters.Add("P_DispositionFlag", obj.DispositionFlag);
+                        OraCmd.Parameters.Add("P_EntityID", obj.EntityID);
+                        OraCmd.Parameters.Add("P_ReferenceNumber", obj.ReferenceNumber);
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error SAVE_ERX_TRAN_RESPONSE {ex.Message}", ex);
+            }           
+        }
+
+        public void SAVE_ERX_TRAN_RESPONSE_ERROR(List<TransactionResponseErrorModel> items)
+        {
+            OracleConnection con = null;
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (var OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.SAVE_ERX_TRAN_RESPONSE_ERROR";
+                        OraCmd.Parameters.Add(new OracleParameter("P_ENTITY_ID", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_AdditionalReference", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_AdditionalReferenceObjectName", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Reference", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_ReferenceObjectName", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_PropertyName", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_RuleCode", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_ErrorText", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_ObjectName", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_Transaction_Type", OracleDbType.NVarchar2));
+
+                        string[] P_ENTITY_ID = new string[items.Count];
+                        string[] P_AdditionalReference = new string[items.Count];
+                        string[] P_AdditionalReferenceObjectName = new string[items.Count];
+                        string[] P_Reference = new string[items.Count];
+                        string[] P_ReferenceObjectName = new string[items.Count];
+                        string[] P_PropertyName = new string[items.Count];
+                        string[] P_RuleCode = new string[items.Count];
+                        string[] P_ErrorText = new string[items.Count];
+                        string[] P_ObjectName = new string[items.Count];
+                        string[] P_Transaction_Type = new string[items.Count];
+                       
+
+                        for (int i = 0; i < items.Count; i++)
+                        {
+                            P_ENTITY_ID[i] = items[i].EntityID;
+                            P_AdditionalReference[i] = items[i].AdditionalReference;
+                            P_AdditionalReferenceObjectName[i] = items[i].AdditionalReferenceObjectName;
+                            P_Reference[i] = items[i].Reference;
+                            P_ReferenceObjectName[i] = items[i].ReferenceObjectName;
+                            P_PropertyName[i] = items[i].PropertyName;
+                            P_RuleCode[i] = items[i].RuleCode;
+                            P_ErrorText[i] = items[i].ErrorText;
+                            P_ObjectName[i] = items[i].ObjectName;
+                            P_Transaction_Type[i] = items[i].Transaction;
+                            
+                        }
+                        OraCmd.Parameters["P_ENTITY_ID"].Value = P_ENTITY_ID;
+                        OraCmd.Parameters["P_AdditionalReference"].Value = P_AdditionalReference;
+                        OraCmd.Parameters["P_AdditionalReferenceObjectName"].Value = P_AdditionalReferenceObjectName;
+                        OraCmd.Parameters["P_Reference"].Value = P_Reference;
+                        OraCmd.Parameters["P_ReferenceObjectName"].Value = P_ReferenceObjectName;
+                        OraCmd.Parameters["P_PropertyName"].Value = P_PropertyName;
+                        OraCmd.Parameters["P_RuleCode"].Value = P_RuleCode;
+                        OraCmd.Parameters["P_ErrorText"].Value = P_ErrorText;
+                        OraCmd.Parameters["P_ObjectName"].Value = P_ObjectName;
+                        OraCmd.Parameters["P_Transaction_Type"].Value = P_Transaction_Type;
+                        OraCmd.ArrayBindCount = P_ENTITY_ID.Length;
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error SAVE_ERX_TRAN_RESPONSE_ERROR {ex.Message}", ex);
+            }
+        }
+    }
 }

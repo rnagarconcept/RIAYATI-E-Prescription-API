@@ -1,0 +1,23 @@
+{
+  "StatusCode": "200",
+  "Message": "Item Added Successfully",
+  "Success": "true",
+  "UserMessage": "Item Added Successfully",
+  "MemberValidation": "1",
+  "EntityID": "5b6ae93c28c75751aca5f3db",
+  "Error": [
+    {
+      "AdditionalReference": "11453",
+      "AdditionalReferenceObjectName": "Claim",
+      "Reference": "11453",
+      "ReferenceObjectName": "Claim",
+      "PropertyName": "ProviderId",
+      "PropertyValue": {},
+      "RuleCode": "VR08",
+      "ErrorText": "Claim ProviderId must be valid provider, Please fix ProviderId be a valid provider license.",
+      "ObjectName": "Claim",
+      "Transaction": "Submission"
+    }
+  ],
+  "ReferenceNumber": "556821"
+}

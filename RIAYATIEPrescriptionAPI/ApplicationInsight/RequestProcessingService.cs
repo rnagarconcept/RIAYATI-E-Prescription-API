@@ -16,6 +16,7 @@ namespace ApplicationInsight
     public class EndpointExpressBase
     {
         protected string ApiBaseURL = ConfigurationManager.AppSettings["API_BASE_URL"];
+        protected bool debugg = string.IsNullOrEmpty(ConfigurationManager.AppSettings["DEBUGG"]) ? false : Convert.ToBoolean(ConfigurationManager.AppSettings["DEBUGG"]);
     }
     public class RequestProcessingService : EndpointExpressBase
     {
@@ -32,10 +33,10 @@ namespace ApplicationInsight
             }
         }
         public async Task Process()
-        {           
+        {
             var pendingRequests = OracleDataAccessRepository.GetInstance.GetPendingRequests();
             var facilityLicense = OracleDataAccessRepository.GetInstance.GetFacilityLicenseDetails();
-            if (pendingRequests.Count > 0)           
+            if (pendingRequests.Count > 0)
             {
                 foreach (var req in pendingRequests)
                 {
@@ -50,32 +51,32 @@ namespace ApplicationInsight
                         if (!string.IsNullOrEmpty(req.PAYLOAD))
                         {
                             try
-                            {                              
+                            {
                                 var response = new ApiResponseModel();
                                 reqModel.Auth = new DomainModel.Models.Common.AuthDetail { F_LIC = licenseDetail.F_LIC, F_USER = licenseDetail.F_USER, F_PWD = licenseDetail.F_PWD };
-                                var searchQuery = "";
                                 switch (req.REQUEST_TYPE.ToUpper())
                                 {
-                                   
+
                                     case "ERX-NEW-TRANSACTION":
-                                        reqModel.Method = HttpMethod.Get;                                        
+                                        reqModel.Method = HttpMethod.Get;
                                         reqModel.ApiUrl = $"{ApiBaseURL}/ERX/GetNew";
                                         reqModel.RequestType = "ERX-NEW-TRANSACTION";
-                                        response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
-                                        if (response.StatusCode == 200)
-                                        {                                           
+                                        if (!debugg)
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        else
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsyncStub(reqModel);
+                                        }
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
-                                    case "ERX-SEARCH-TRANSACTION":                                       
+                                    case "ERX-SEARCH-TRANSACTION":
                                         reqModel.Method = HttpMethod.Get;
                                         reqModel.ApiUrl = $"{ApiBaseURL}/erx/search";
                                         reqModel.RequestType = "ERX-SEARCH-TRANSACTION";
                                         response = Task.Run(() => APIConnectService.GetInstance.SendAsync(reqModel)).Result;
-                                        if (response.StatusCode == 200)
-                                        {                                            
-                                        }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
 
                                     case "ERX-DOWNLOAD-TRANSACTION":
@@ -83,24 +84,32 @@ namespace ApplicationInsight
                                         reqModel.Method = HttpMethod.Get;
                                         reqModel.ApiUrl = $"{ApiBaseURL}/erx/view?id={erxDownloadModel.Id}";
                                         reqModel.RequestType = "ERX-DOWNLOAD-TRANSACTION";
-                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
-                                        if (response.StatusCode == 200)
+                                        if (!debugg)
                                         {
+                                            response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        else
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsyncStub(reqModel);
+                                        }
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
 
                                     case "ERX_CHECK_ACTIVITY_STATUS":
-                                            var activityStatusModel = JsonConvert.DeserializeObject<CheckPrescriptionActivityStatusModel>(req.PAYLOAD);
-                                            reqModel.Method = HttpMethod.Get;
-                                            reqModel.ApiUrl = $"{ApiBaseURL}";
-                                            reqModel.EndPoint = $"ERX/CheckActivityStatus?id={activityStatusModel.TransactionId}";
-                                            reqModel.RequestType = "ERX_CHECK_ACTIVITY_STATUS";
+                                        var activityStatusModel = JsonConvert.DeserializeObject<CheckPrescriptionActivityStatusModel>(req.PAYLOAD);
+                                        reqModel.Method = HttpMethod.Get;
+                                        reqModel.ApiUrl = $"{ApiBaseURL}";
+                                        reqModel.EndPoint = $"ERX/CheckActivityStatus?id={activityStatusModel.TransactionId}";
+                                        reqModel.RequestType = "ERX_CHECK_ACTIVITY_STATUS";
+                                        if (!debugg)
+                                        {
                                             response = await APIConnectService.GetInstance.SendAsync(reqModel);
-                                            if (response.StatusCode == 200)
-                                            {
-                                            }
-                                            SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        }
+                                        else
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsyncStub(reqModel);
+                                        }
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
 
                                     case "ERX-UPLOAD-TRANSACTION":
@@ -110,11 +119,15 @@ namespace ApplicationInsight
                                         reqModel.ApiUrl = $"{ApiBaseURL}";
                                         reqModel.EndPoint = "ERX/PostRequest";
                                         reqModel.RequestType = "ERX-UPLOAD-TRANSACTION";
-                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
-                                        if (response.StatusCode == 200)
+                                        if (!debugg)
                                         {
+                                            response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        else
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsyncStub(reqModel);
+                                        }
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
 
                                     case "ERX_UPLOAD_AUTH_TRANSACTION":
@@ -123,12 +136,16 @@ namespace ApplicationInsight
                                         reqModel.Data = req.PAYLOAD;
                                         reqModel.ApiUrl = $"{ApiBaseURL}";
                                         reqModel.EndPoint = "ERX/PostAuthorization";
-                                        reqModel.RequestType = "ERX_UPLOAD_AUTH_TRANSACTION";                                        
-                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
-                                        if (response.StatusCode == 200)
+                                        reqModel.RequestType = "ERX_UPLOAD_AUTH_TRANSACTION";
+                                        if (!debugg)
                                         {
+                                            response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        else
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsyncStub(reqModel);
+                                        }                                        
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
 
                                     case "ERX-SET-TRANSACTION-DOWNLOAD":
@@ -138,11 +155,15 @@ namespace ApplicationInsight
                                         reqModel.ApiUrl = $"{ApiBaseURL}/";
                                         reqModel.EndPoint = $"ERX/SetDownloaded?id={downloadModel.Id}";
                                         reqModel.RequestType = "ERX-SET-TRANSACTION-DOWNLOAD";
-                                        response = await APIConnectService.GetInstance.SendAsync(reqModel);
-                                        if (response.StatusCode == 200)
+                                        if (!debugg)
                                         {
+                                            response = await APIConnectService.GetInstance.SendAsync(reqModel);
                                         }
-                                        SetPendingRequest(req.REQUEST_TYPE.ToUpper(), response, pendingRequstStatus);
+                                        else
+                                        {
+                                            response = await APIConnectService.GetInstance.SendAsyncStub(reqModel);
+                                        }
+                                        SaveTransactionResponse(req.ID, pendingRequstStatus, response);
                                         break;
                                 }
                             }
@@ -169,7 +190,7 @@ namespace ApplicationInsight
                         pendingRequstStatus.ErrorMessage = "Auto Token Not Recieved";
                         log.Error($"Error in Process Pending Request for {req.ID} - Auth Token can't be null or empty.");
                     }
-                    
+
                     OracleDataAccessRepository.GetInstance.UpdatePendingRequestStatus(pendingRequstStatus);
                     log.Info($"Completed processing pending request {req.ID}");
                 }
@@ -180,146 +201,47 @@ namespace ApplicationInsight
             }
         }
 
-
-        //private void SaveEPrescriptionResponse(int requestId, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
-        //{
-        //    try
-        //    {
-
-        //        var isValidResponse = IsValidResponse(response.Data, pendingRequstStatus);
-        //        if (response.StatusCode == 200 && isValidResponse)
-        //        {
-        //            pendingRequstStatus.IsProcessing = 1;
-        //            pendingRequstStatus.Status = "Success";
-        //            var result = JsonConvert.DeserializeObject<List<EPrescriptionsResponseModel>>(response.Data);
-        //            //var model = result.FirstOrDefault();
-        //            foreach (var model in result)
-        //            {
-        //                OracleDataAccessRepository.GetInstance.SavePrescriptionResponse(requestId, model);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            pendingRequstStatus.IsProcessing = -1;
-        //            pendingRequstStatus.Status = "Failed";
-        //            pendingRequstStatus.ErrorMessage = string.IsNullOrEmpty(pendingRequstStatus.ErrorMessage) ? response.Message : pendingRequstStatus.ErrorMessage;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        pendingRequstStatus.IsProcessing = -1;
-        //        pendingRequstStatus.Status = "Failed";
-        //        pendingRequstStatus.ErrorMessage = ex.Message;
-        //    }
-        //}
-        //private void SaveEPrescriptionDetailResponse(int requestId, int ePrescriptionId, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
-        //{
-        //    try
-        //    {
-        //        var isValidResponse = IsValidResponse(response.Data, pendingRequstStatus);
-        //        if (response.StatusCode == 200 && isValidResponse)
-        //        {
-        //            pendingRequstStatus.IsProcessing = 1;
-        //            pendingRequstStatus.Status = "Success";
-        //            var result = JsonConvert.DeserializeObject<EPrescriptionDetailsResponseModel>(response.Data);
-        //            if (result.EPrescriptionID > 0)
-        //            {
-        //                OracleDataAccessRepository.GetInstance.SavePrescriptionDetailsResponse(requestId, ePrescriptionId, result);
-        //            }
-        //            else
-        //            {
-        //                pendingRequstStatus.IsProcessing = -1;
-        //                pendingRequstStatus.Status = "Failed";
-        //                pendingRequstStatus.ErrorMessage = "Invalid Response";
-        //            }
-        //        }
-        //        else
-        //        {
-        //            pendingRequstStatus.IsProcessing = -1;
-        //            pendingRequstStatus.Status = "Failed";
-        //            pendingRequstStatus.ErrorMessage = string.IsNullOrEmpty(pendingRequstStatus.ErrorMessage) ? response.Message : pendingRequstStatus.ErrorMessage;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        pendingRequstStatus.IsProcessing = -1;
-        //        pendingRequstStatus.Status = "Failed";
-        //        pendingRequstStatus.ErrorMessage = ex.Message;
-        //        log.Error($"Error SaveEPrescriptionDetailResponse Request Id {requestId} Response : {response.Data.ToString()}");
-        //    }
-        //}
-
-        //private void SaveDispenseResponse(int requestId, string prescriptionId, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
-        //{
-        //    try
-        //    {
-        //        var isValidResponse = IsValidResponse(response.Data, pendingRequstStatus);
-        //        if (response.StatusCode == 200 && isValidResponse)
-        //        {
-        //            pendingRequstStatus.IsProcessing = 1;
-        //            pendingRequstStatus.Status = "Success";
-        //            var result = JsonConvert.DeserializeObject<List<DispenseResponseModel>>(response.Data);
-        //            var eprescriptionId = string.IsNullOrEmpty(prescriptionId) ? 0 : int.Parse(prescriptionId);
-        //            OracleDataAccessRepository.GetInstance.SaveDispenseResponse(requestId, eprescriptionId, result);
-        //        }
-        //        else
-        //        {
-        //            pendingRequstStatus.IsProcessing = -1;
-        //            pendingRequstStatus.Status = "Failed";
-        //            if (response != null)
-        //            {
-        //                pendingRequstStatus.ErrorMessage = string.IsNullOrEmpty(pendingRequstStatus.ErrorMessage) ? response.Message : pendingRequstStatus.ErrorMessage;
-        //            }
-        //            pendingRequstStatus.ErrorMessage = "Invalid response recieved";
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        pendingRequstStatus.IsProcessing = -1;
-        //        pendingRequstStatus.Status = "Failed";
-        //        pendingRequstStatus.ErrorMessage = ex.Message;
-        //        log.Error($"Error SaveDispenseResponse Request Id {requestId} Response : {response.Data.ToString()}");
-        //    }
-        //}
-
-        //public bool IsValidResponse(string response, PendingRequestStatus pendingRequstStatus)
-        //{
-        //    try
-        //    {
-        //        JObject jsonObject = JObject.Parse(response);
-        //        bool responseType = jsonObject.ContainsKey("Type");
-        //        dynamic filedResponse = JsonConvert.DeserializeObject(response);
-        //        if (responseType)
-        //        {
-        //            log.Info($"Error response Response Type {responseType} Message {filedResponse.Message.ToString()}");
-        //            pendingRequstStatus.IsProcessing = -1;
-        //            pendingRequstStatus.Status = filedResponse.Type.ToString();
-        //            pendingRequstStatus.ErrorMessage = filedResponse.Message.ToString();
-        //            return false;
-        //        }
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        log.Error($"Error IsValidResponse Request Id {pendingRequstStatus.RequestId} Response : {response}");
-        //        return true;
-        //    }
-        //}
-
-        private void SetPendingRequest(string reqType, ApiResponseModel response, PendingRequestStatus pendingRequstStatus)
+        private void SaveTransactionResponse(int requestId, PendingRequestStatus pendingRequstStatus, ApiResponseModel response)
         {
-            if (response.StatusCode == 200)
+            try
             {
                 pendingRequstStatus.Response = response.Data;
-                pendingRequstStatus.Status = "SUCCESS";
-                pendingRequstStatus.IsProcessing = 1;
+                pendingRequstStatus.RequestId = requestId;
+                if (response.StatusCode == 200)
+                {
+                    pendingRequstStatus.Response = response.Data;
+                    pendingRequstStatus.Status = "SUCCESS";
+                    pendingRequstStatus.IsProcessing = 1;
+                }
+                else if (response.StatusCode == 400)
+                {
+                    pendingRequstStatus.Status = "ERROR";
+                    pendingRequstStatus.IsProcessing = -1;
+                    pendingRequstStatus.ErrorMessage = "BAD REQUEST";
+                }
+                else
+                {
+                    pendingRequstStatus.Status = "ERROR";
+                    pendingRequstStatus.IsProcessing = -1;
+                    pendingRequstStatus.ErrorMessage = response.ErrorMessages;
+                }
+
+                OracleDataAccessRepository.GetInstance.UpdatePendingRequestStatus(pendingRequstStatus);
+                if (!string.IsNullOrEmpty(response.Data))
+                {
+                    var tranResponse = JsonConvert.DeserializeObject<TransactionResponseModel>(response.Data);
+                    OracleDataAccessRepository.GetInstance.SAVE_ERX_TRAN_RESPONSE(requestId, tranResponse);
+                    OracleDataAccessRepository.GetInstance.SAVE_ERX_TRAN_RESPONSE_ERROR(tranResponse.Error);
+                }
+                else
+                {
+                    log.Info($"No response from api for request {requestId}");
+                }
             }
-            else if (response.StatusCode == 400)
+            catch (Exception ex)
             {
-                pendingRequstStatus.Status = "ERROR";
-                pendingRequstStatus.IsProcessing = -1;
-                pendingRequstStatus.ErrorMessage = "BAD REQUEST";
-            }          
+                log.Error($"Error in SaveTransactionResponse for Request Id {requestId} {ex.Message}");
+            }
         }
     }
 }

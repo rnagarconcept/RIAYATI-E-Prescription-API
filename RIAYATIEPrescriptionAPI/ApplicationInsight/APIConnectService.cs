@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -95,6 +96,32 @@ namespace ApplicationInsight
                 throw ex;
             }
             return responseModel;
+        }
+
+        public async Task<ApiResponseModel> SendAsyncStub(ApiRequestModel model)
+        {
+            try
+            {
+                HttpResponseMessage response = null;
+                responseModel = new ApiResponseModel();
+                responseModel.StatusCode = 200;
+                responseModel.Data = ReadJsonFile();
+            }
+            catch (Exception ex)
+            {
+                responseModel.Message = "Error";
+                responseModel.ErrorMessages = ex.Message;
+                log.Error($"Error api request {ex.Message}", ex);
+                throw ex;
+            }
+            return responseModel;
+        }
+
+        private string ReadJsonFile()
+        {
+            var basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "ErxResponse.json");
+            var jsonContent = File.ReadAllText(basePath);
+            return jsonContent;
         }
     }
 }

@@ -80,6 +80,8 @@
     <Compile Include="Models\Response\PendingRequestStatus.cs" />
     <Compile Include="Models\Response\Root.cs" />
     <Compile Include="Models\Response\TokenResponseModel.cs" />
+    <Compile Include="Models\Response\TransactionResponseErrorModel.cs" />
+    <Compile Include="Models\Response\TransactionResponseModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -358,12 +358,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_8C4B13B4E347DA87D6775486117DCE0D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_609F6983060B44FB91F546C26A994DCD"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -469,6 +463,12 @@
         "OwnerKey" = "8:_A736E2C1789A2BD9B0B8FC92C2076C7B"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_8C4B13B4E347DA87D6775486117DCE0D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -487,6 +487,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -503,12 +519,76 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
     {
         "CustomAction"
         {
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_18E6AA913E99445CA9027ED893750F0F"
+            {
+            "Name" = "8:Primary output from RIAYATIEPrescriptionHost (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_609F6983060B44FB91F546C26A994DCD"
+            "FileType" = "3:2"
+            "InstallAction" = "3:3"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_250F61A8_72AC_4E5F_A28A_68A32488B857"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_7238E3102BF54C43A5D193AAA3D17FD0"
+            {
+            "Name" = "8:Primary output from RIAYATIEPrescriptionHost (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_609F6983060B44FB91F546C26A994DCD"
+            "FileType" = "3:2"
+            "InstallAction" = "3:4"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_2707867F_8A48_4C77_BB58_EB7B2476A221"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_CDA2004BB3DB403D91C2F74EC07A32CA"
+            {
+            "Name" = "8:Primary output from RIAYATIEPrescriptionHost (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_609F6983060B44FB91F546C26A994DCD"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_199650F3_3011_4F9E_B89C_601B21A435A6"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_E52639358B494C9190DE899B927031E8"
+            {
+            "Name" = "8:Primary output from RIAYATIEPrescriptionHost (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_609F6983060B44FB91F546C26A994DCD"
+            "FileType" = "3:2"
+            "InstallAction" = "3:2"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_3A7D35B5_96BA_48CC_BA3B_8107418F4DD2"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
         }
         "DefaultFeature"
         {
@@ -1147,7 +1227,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Riayati E-Prescription"
         "ProductCode" = "8:{C9B8D8D9-D442-48CD-9AA2-4CB0998609B5}"
-        "PackageCode" = "8:{646F02D6-1EA8-4A22-A3BC-58A2663C7693}"
+        "PackageCode" = "8:{D0F2304B-6C4A-4072-91DA-947548889333}"
         "UpgradeCode" = "8:{9C29361C-9B6C-48A0-B082-5F42232E44B6}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
