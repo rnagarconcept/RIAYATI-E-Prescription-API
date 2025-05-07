@@ -249,7 +249,7 @@ namespace DataAccess
                     {
                         OraCmd.Connection = con;
                         OraCmd.CommandType = CommandType.StoredProcedure;
-                        OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESPONSE_AUTHORIZATION";
+                        OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESP_AUTH";
                         OraCmd.Parameters.Add("P_REQ_ID", requestId);
                         OraCmd.Parameters.Add("P_AUTH_ID", obj.ErxAuthorization.Authorization.ID);
                         OraCmd.Parameters.Add("P_IDPayer", obj.ErxAuthorization.Authorization.IDPayer);
@@ -350,7 +350,7 @@ namespace DataAccess
                     {
                         OraCmd.Connection = con;
                         OraCmd.CommandType = CommandType.StoredProcedure;
-                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESPONSE_AUTH_ACT_OBSERVATION";
+                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.SAVE_ERX_RESP_AUTH_ACT_OBS";
 
                         OraCmd.Parameters.Add(new OracleParameter("P_ACTIVITY_ID", OracleDbType.Int32));
                         OraCmd.Parameters.Add(new OracleParameter("P_REQ_ID", OracleDbType.Int32));
@@ -440,10 +440,10 @@ namespace DataAccess
                     {
                         OraCmd.Connection = con;
                         OraCmd.CommandType = CommandType.StoredProcedure;
-                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.SAVE_ERX_TRAN_RESPONSE_ERROR";
+                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.SAVE_ERX_TRAN_RESP_ERR";
                         OraCmd.Parameters.Add(new OracleParameter("P_ENTITY_ID", OracleDbType.NVarchar2));
                         OraCmd.Parameters.Add(new OracleParameter("P_AdditionalReference", OracleDbType.NVarchar2));
-                        OraCmd.Parameters.Add(new OracleParameter("P_AdditionalReferenceObjectName", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_AdditionalRefObjectName", OracleDbType.NVarchar2));
                         OraCmd.Parameters.Add(new OracleParameter("P_Reference", OracleDbType.NVarchar2));
                         OraCmd.Parameters.Add(new OracleParameter("P_ReferenceObjectName", OracleDbType.NVarchar2));
                         OraCmd.Parameters.Add(new OracleParameter("P_PropertyName", OracleDbType.NVarchar2));
