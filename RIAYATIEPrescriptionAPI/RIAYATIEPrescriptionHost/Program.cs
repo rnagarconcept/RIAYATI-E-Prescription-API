@@ -55,9 +55,9 @@ namespace RIAYATIEPrescriptionHost
                 }
                 else
                 {
-                    ServiceBase[] ServicesToRun;
-                    ServicesToRun = new ServiceBase[] { new Service1() };
-                    ServiceBase.Run(ServicesToRun);
+                    //ServiceBase[] ServicesToRun;
+                    //ServicesToRun = new ServiceBase[] { new Service1() };
+                    //ServiceBase.Run(ServicesToRun);
                 }
             }
             catch (Exception ex)
@@ -70,7 +70,9 @@ namespace RIAYATIEPrescriptionHost
         {
             try
             {
-                var awaitTask = RequestProcessingService.GetInstance.Process();
+                // Populate Pending Request Table
+                var awaitTask1 =  RequestProcessingServiceEx.GetInstance.Process();
+                //var awaitTask = RequestProcessingService.GetInstance.Process();
             }
             catch (Exception ex)
             {

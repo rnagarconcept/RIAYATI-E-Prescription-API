@@ -191,7 +191,7 @@ namespace ApplicationInsight
                         log.Error($"Error in Process Pending Request for {req.ID} - Auth Token can't be null or empty.");
                     }
 
-                    OracleDataAccessRepository.GetInstance.UpdatePendingRequestStatus(pendingRequstStatus);
+                    OracleDataAccessRepository.GetInstance.UpdatePendingRequestStatus(pendingRequstStatus);                    
                     log.Info($"Completed processing pending request {req.ID}");
                 }
             }

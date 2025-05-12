@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheManager.cs" />
+    <Compile Include="OracleDataAccessRepositoryEx.cs" />
     <Compile Include="OracleDataAccessRepository.cs" />
     <Compile Include="OracleDataReaderEx.cs" />
     <Compile Include="OracleRepositoryBase.cs" />

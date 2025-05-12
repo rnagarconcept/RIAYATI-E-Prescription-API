@@ -502,5 +502,103 @@ namespace DataAccess
                 log.Error($"Error SAVE_ERX_TRAN_RESPONSE_ERROR {ex.Message}", ex);
             }
         }
+        
+        public void PopulatingPendingRequest(PendingRequestEx pendingRequest)
+        {
+            OracleConnection con = null;
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (var OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = OraCmd.CommandText = $"{PackageName}.INSERT_PENDING_REQUESTS";
+                        OraCmd.Parameters.Add(new OracleParameter("P_REQUEST_TYPE", OracleDbType.NVarchar2));
+                        OraCmd.Parameters.Add(new OracleParameter("P_FACILITY_ID", OracleDbType.Int32));
+                        OraCmd.Parameters.Add(new OracleParameter("P_PAYLOAD", OracleDbType.NVarchar2));
+                        
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error PopulatingPendingRequest {ex.Message}", ex);
+            }
+        }
+        
+        public List<LicenseDetail> GET_LICENSE_DETAILS()
+        {
+            OracleConnection con = null;
+            var result = new List<LicenseDetail>();
+            try
+            {
+                using (con = OpenConnection())
+                {
+                    using (OracleCommand OraCmd = new OracleCommand())
+                    {
+                        OraCmd.Connection = con;
+                        OraCmd.CommandType = CommandType.StoredProcedure;
+                        OraCmd.CommandText = $"{PackageName}.GET_LICENSE_DETAILS";
+                        OraCmd.Parameters.Add(new OracleParameter("p_refcur", OracleDbType.RefCursor, ParameterDirection.Output));
+                        if (con.State == ConnectionState.Closed)
+                        {
+                            con.Open();
+                        }
+                        OraCmd.ExecuteNonQuery();
+                        var reader = ((OracleRefCursor)OraCmd.Parameters["p_refcur"].Value).GetDataReader();
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                var obj = new LicenseDetail();
+                                obj.ERX_NO = reader.ToInt32("ID");
+                                obj.SENDER_ID = reader.ToInt32("SENDER_ID");
+                                obj.UPD_FLAG = reader.ToInt32("UPD_FLAG");
+                                obj.MRN = reader.ToInt32("MRN");
+                                obj.FACILITY_LIC_ID = reader.ToInt32("FACILITY_LIC_ID");
+                                obj.FACILITY_LIC_USER = reader.ToString("FACILITY_LIC_USER");
+                                obj.FACILITY_LIC_PWD = reader.ToBlobString("FACILITY_LIC_PWD");
+                                obj.CLINICIAN_USER = reader.ToBlobString("CLINICIAN_USER");
+                                obj.CLINICIAN_PWD = reader.ToBlobString("CLINICIAN_PWD");
+                                result.Add(obj);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error GET_LICENSE_DETAILS {ex.Message}", ex);
+            }
+            return result;
+        }
+
+        public void UPDATE_PAT_ERX_HEADER(int ERX_NO, int status)
+        {
+            try
+            {
+                OracleCommand cmd = new OracleCommand();
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "UPDATE PAT_ERX_HEADER SET STATUS=:P_STATUS,LAST_REQ_STATUS_TIME=SYSDATE WHERE ERX_NO= :P_ERXNO ";
+                cmd.Parameters.Add(new OracleParameter("P_STATUS", status));
+                cmd.Parameters.Add(new OracleParameter("P_ERXNO", ERX_NO));
+                using (OracleConnection con = OpenConnection())
+                {
+                    cmd.Connection = con;
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error In UPDATE_PAT_ERX_HEADER for ERX NO {ERX_NO} - {ex.Message}", ex);
+            }
+        }
     }
 }

@@ -55,11 +55,13 @@
     <Compile Include="Models\Common\Frequency.cs" />
     <Compile Include="Models\Common\GlobalConstants.cs" />
     <Compile Include="Models\Common\Header.cs" />
+    <Compile Include="Models\Common\LicenseDetail.cs" />
     <Compile Include="Models\Common\LicenseDetailsModel.cs" />
     <Compile Include="Models\Common\MessageEnevlop.cs" />
     <Compile Include="Models\Common\Observation.cs" />
     <Compile Include="Models\Common\Patient.cs" />
     <Compile Include="Models\Common\PendingRequest.cs" />
+    <Compile Include="Models\Common\PendingRequestEx.cs" />
     <Compile Include="Models\Common\PendingRequestsModel.cs" />
     <Compile Include="Models\Common\Prescription.cs" />
     <Compile Include="Models\Common\SoapConfigurationSettings.cs" />
